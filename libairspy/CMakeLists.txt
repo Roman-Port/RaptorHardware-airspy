@@ -41,7 +41,6 @@ set(AIRSPY_VER_REVISION ${AIRSPY_VER_RE})
 set(PACKAGE libairspy)
 set(VERSION_STRING ${AIRSPY_VER_MAJOR}.${AIRSPY_VER_MINOR})
 set(VERSION ${VERSION_STRING})
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../cmake/modules)
 set(CMAKE_BUILD_TYPE Release)
 
 if(APPLE)
@@ -73,55 +72,7 @@ else()
 		 add_definitions(-DAIRSPY_BIG_ENDIAN)
 	endif(${BIGENDIAN})
 endif()
-find_package(LIBUSB REQUIRED)
-find_package(Threads REQUIRED)
 
 include_directories(${LIBUSB_INCLUDE_DIR} ${THREADS_PTHREADS_INCLUDE_DIR})
 
 add_subdirectory(src)
-
-########################################################################
-# Create Pkg Config File
-########################################################################
-FOREACH(inc ${LIBUSB_INCLUDE_DIR})
-    LIST(APPEND AIRSPY_PC_CFLAGS "-I${inc}")
-ENDFOREACH(inc)
-
-# use space-separation format for the pc file
-STRING(REPLACE ";" " " AIRSPY_PC_CFLAGS "${AIRSPY_PC_CFLAGS}")
-STRING(REPLACE ";" " " AIRSPY_PC_LIBS "${AIRSPY_PC_LIBS}")
-
-# unset these vars to avoid hard-coded paths to cross environment
-IF(CMAKE_CROSSCOMPILING)
-    UNSET(AIRSPY_PC_CFLAGS)
-    UNSET(AIRSPY_PC_LIBS)
-ENDIF(CMAKE_CROSSCOMPILING)
-
-set(prefix ${CMAKE_INSTALL_PREFIX})
-set(exec_prefix \${prefix})
-set(libdir \${exec_prefix}/lib${LIB_SUFFIX})
-set(includedir \${prefix}/include)
-
-CONFIGURE_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/libairspy.pc.in
-    ${CMAKE_CURRENT_BINARY_DIR}/libairspy.pc
-@ONLY)
-
-INSTALL(
-    FILES ${CMAKE_CURRENT_BINARY_DIR}/libairspy.pc
-    DESTINATION lib${LIB_SUFFIX}/pkgconfig
-)
-
-########################################################################
-# Create uninstall target
-########################################################################
-if(NOT airspy_all_SOURCE_DIR)
-configure_file(
-    ${PROJECT_SOURCE_DIR}/../cmake/cmake_uninstall.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
-@ONLY)
-
-add_custom_target(uninstall
-    ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
-)
-endif()
